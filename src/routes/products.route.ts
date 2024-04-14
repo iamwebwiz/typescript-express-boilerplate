@@ -1,5 +1,7 @@
 import { Request, Response, Router } from "express";
 import { Product } from "../models/product.model";
+import { productValidationRules } from "../validators/product.rules";
+import { validationResult } from "express-validator";
 
 const router = Router();
 
@@ -9,7 +11,13 @@ router.get("/", (req: Request, res: Response) => {
   res.json(products);
 });
 
-router.post("/", (req: Request, res: Response) => {
+router.post("/", productValidationRules, (req: Request, res: Response) => {
+  const validationErrors = validationResult(req);
+
+  if (!validationErrors.isEmpty()) {
+    return res.status(400).json({ errors: validationErrors.array() });
+  }
+
   const product: Product = {
     id: products.length + 1,
     name: req.body.name,
@@ -33,7 +41,13 @@ router.get("/:id", (req: Request, res: Response) => {
   res.json(product);
 });
 
-router.put("/:id", (req: Request, res: Response) => {
+router.put("/:id", productValidationRules, (req: Request, res: Response) => {
+  const validationErrors = validationResult(req);
+
+  if (!validationErrors.isEmpty()) {
+    return res.status(400).json({ errors: validationErrors.array() });
+  }
+
   const product = products.find((product) => product.id === parseInt(req.params.id));
 
   if (!product) {
